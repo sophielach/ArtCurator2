@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="credentialless">
+    <title>Homepage </title>
+    <link href="https://fonts.googleapis.com/css2?family=Vidaloka&display=swap" rel="stylesheet"> <!--for font-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <style>
+        body {background-color: #faf3f3; font-family: 'Vidaloka', serif;}
+        h1 {color: #5d071e; font-family: 'Vidaloka', serif;  margin-bottom: 0;}
+        h2 {margin-top: 0}
+    #artwork {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 100px;
+    }
+
+    #artwork div {
+        background-color: #fff7f7;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        text-align: left;
+        position: relative; 
+        padding-bottom: 0px;
+    }
+
+    #artwork img { width: 100%; height: auto; border-radius: 6px;}
+
+    .search-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 15px 10px 15px 10px;
+    border-radius: 30px;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    font-size: 16px;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+}
+nav{ display: flex; justify-content: space-between; align-items: center; padding: 0px;}
+        .nav-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .galleries-nav {
+            background-color: #e8e8e8;
+            color: #333;
+        }
+        header {background-color: white; margin-bottom: 40px;;
+}
+  
+.save-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(0,0,0,0.1);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .save-btn:hover {background-color: rgba(0,0,0,0.3);}
+
+        .auth-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            display: none; /* Hide the avatar */
+        }
+
+        .logout-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            background-color: #5d071e;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #7a0a26;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>     
+            <h1 style="font-size:45px; margin-left: 40px;"> ArtCurator</h1>     
+            <div class="auth-container">
+                <div id="user-info" class="user-info" style="display: none;">
+                    <span id="user-name"></span>
+                    <a href="/logout" class="logout-btn">Logout</a>
+                </div>
+                <div id="g_id_signin" class="g_id_signin"></div>
+                <a href="#" class="nav-btn galleries-nav">VISIT YOUR GALLERIES</a>
+            </div>
+        </nav>
+        <h2 style="font-size: 15px; margin-left: 40px;"> Create Your Personal Gallery</h2>
+    </header>
+
+    <form id="search-form" class="search-container" onsubmit="handleSearch(event)">
+        <input 
+            type="text" 
+            id="searchInput" 
+            placeholder=" Search for art, artist, styles..." 
+            required
+        />
+        <button type="submit" class="search-icon">
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
+
+    <div id="artwork"> </div>
+    
+    <div id="about">
+    </div> 
+    <script>
+         let page = 1;
+        let isLoading = false; 
+
+
+    function handleSearch(event) {
+        event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (query) {
+                page = 1;
+                document.getElementById("artwork").innerHTML = ''; // Clear existing results
+                fetchArtwork(query);
+            } else { alert('Please enter a term to search for.');}
+        }
+        // get API
+        function fetchArtwork(query) {
+            if (isLoading) return; // Prevent fetching if already in progress
+            isLoading = true;
+            
+            fetch(`https://api.artic.edu/api/v1/artworks/search?q=${query}&fields=title,image_id,artist_title,artist_display,classification_titles,description,date_display&&page=${page}&limit=9`)
+                .then(res => {return res.text();})
+                .then(data => {
+                    data = JSON.parse(data)
+                    displayArtworks(data.data);
+                    isLoading = false;
+                    page++; // Increment page for the next request
+
+                })
+                .catch(error => console.log(error)); isLoading = false;
+        }
+
+        // Display the artwork in the page
+        function displayArtworks(artworks) {
+            const container = document.getElementById("artwork");
+            let i = 0;
+            artworks.forEach(artwork => {
+                art_each = document.createElement("div");
+                art_each.innerHTML = `
+                    <img src="${`https://www.artic.edu/iiif/2/${artwork.image_id}/full/400,/0/default.jpg`}">
+                        <button class="save-btn" id="save-btn-${i}"><i class="fas fa-bookmark"></i></button>
+                         <!-- ADD DATABASE CONNECTION HERE WHEN SAVE IS CLICKED -->
+                        <h3 style="margin-bottom:5px; margin-top: 10px">${artwork.title}</h3>
+                        <p"margin-bottom:0px; ">${artwork.artist_title}, ${artwork.date_display}</p>
+                        <!-- EXTRA ART DATA IS HERE (but not displayed on screen. Put in database?) -->
+                        <!-- <p>${artwork.artist_display}</p> -->
+                        <!-- <p>${artwork.classification_titles}</p>-->
+                `;
+                container.appendChild(art_each);
+
+
+                // add an event listener to the button
+                const btn = document.getElementById(`save-btn-${i}`);
+                btn.addEventListener('click', () => {
+                    fetch('/api/save-art', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(artwork)
+                    })
+                    .then(response => response.json())
+                    .then(data =>console.log(data))
+                    .catch(error =>console.error(error))
+                });
+
+                i++;
+            });
+        }
+            function checkScrollPosition() {
+            const scrollPosition = window.innerHeight + window.scrollY;
+            const bottomPosition = document.documentElement.scrollHeight;
+            
+            if (scrollPosition >= bottomPosition - 100) { 
+                // fetch again
+                const query = document.getElementById('searchInput').value.trim();
+                if (query) {
+                    fetchArtwork(query); 
+                }
+            }
+        }
+
+        window.addEventListener('scroll', checkScrollPosition);
+        window.onload = fetchArtwork("France");
+        
+        // Initialize Google Sign-In when the script loads
+        function initializeGoogleSignIn() {
+            try {
+                google.accounts.id.initialize({
+                    client_id: '16218638873-e13qud162q6q342aqg8f0pu7pmgeu2bb.apps.googleusercontent.com',
+                    callback: handleCredentialResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                });
+                
+                const buttonDiv = document.getElementById('g_id_signin');
+                if (buttonDiv) {
+                    google.accounts.id.renderButton(
+                        buttonDiv,
+                        { 
+                            theme: 'outline',
+                            size: 'large',
+                            type: 'standard',
+                            shape: 'rectangular',
+                            text: 'signin_with',
+                            logo_alignment: 'left'
+                        }
+                    );
+                } else {
+                    console.error('Button container not found');
+                }
+            } catch (error) {
+                console.error('Error initializing Google Sign-In:', error);
+            }
+        }
+
+        // Call initialization when the Google script is loaded
+        window.onload = function() {
+            if (typeof google !== 'undefined') {
+                initializeGoogleSignIn();
+            } else {
+                console.error('Google Sign-In script not loaded');
+            }
+            
+            // Check if user is already logged in
+            fetch('/api/user')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('User data received:', data);
+                    if (data.user) {
+                        console.log('User is logged in:', data.user);
+                        const userInfo = document.getElementById('user-info');
+                        const userName = document.getElementById('user-name');
+                        const signInButton = document.getElementById('g_id_signin');
+                        
+                        if (userInfo && userName && signInButton) {
+                            userInfo.style.display = 'flex';
+                            userName.textContent = data.user.name || 'User';
+                            signInButton.style.display = 'none';
+                            console.log('User info elements updated');
+                        } else {
+                            console.error('Required elements not found');
+                        }
+                    } else {
+                        console.log('No user logged in');
+                        const userInfo = document.getElementById('user-info');
+                        const signInButton = document.getElementById('g_id_signin');
+                        
+                        if (userInfo && signInButton) {
+                            userInfo.style.display = 'none';
+                            signInButton.style.display = 'block';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking user status:', error);
+                });
+        };
+
+        function handleCredentialResponse(response) {
+            if (response.credential) {
+                console.log('Received credential:', response.credential);
+                fetch('/auth/google/callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ credential: response.credential })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            try {
+                                const errorData = JSON.parse(text);
+                                throw new Error(errorData.details || errorData.error || 'Authentication failed');
+                            } catch (e) {
+                                throw new Error(text || 'Authentication failed');
+                            }
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Authentication successful:', data);
+                    if (data.status === 'success' && data.user) {
+                        const userInfo = document.getElementById('user-info');
+                        const userName = document.getElementById('user-name');
+                        const signInButton = document.getElementById('g_id_signin');
+                        
+                        if (userInfo && userName && signInButton) {
+                            userInfo.style.display = 'flex';
+                            userName.textContent = data.user.name || 'User';
+                            signInButton.style.display = 'none';
+                            console.log('User info updated after login');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Authentication error:', error);
+                    alert('Authentication failed: ' + error.message);
+                });
+            } else {
+                console.error('No credential received');
+                alert('No credential received from Google');
+            }
+        }
+    </script>
+</body>
+</html>

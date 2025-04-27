@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage </title>
+    <link href="https://fonts.googleapis.com/css2?family=Vidaloka&display=swap" rel="stylesheet"> <!--for font-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {background-color: #faf3f3; font-family: 'Vidaloka', serif;}
+        h1 {color: #5d071e; font-family: 'Vidaloka', serif;  margin-bottom: 0;}
+        h2 {margin-top: 0}
+    #artwork {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 100px; 
+    }
+
+    #artwork div {
+        background-color: #fff7f7;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        text-align: left;
+        position: relative; 
+        padding-bottom: 0px;
+    }
+
+    #artwork img { width: 100%; height: auto; border-radius: 6px;  transition: transform 0.5s ease; }
+
+    #artwork img:hover {
+    transform: scale(1.05); /* Slight zoom effect */
+}
+    .search-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 15px 10px 15px 10px;
+    border-radius: 30px;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    font-size: 16px;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+}
+nav{ display: flex; justify-content: space-between; align-items: center; padding: 0px;}
+        .nav-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .galleries-nav {
+            background-color: #e8e8e8;
+            color: #333;
+        }
+        header {background-color: white; margin-bottom: 40px;;
+}
+  
+.save-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(0,0,0,0.1);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .save-btn:hover {background-color: rgba(0,0,0,0.3);}
+
+        #footer {
+    background-color: white;
+    color: black;
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column; }
+#footer a {
+    text-decoration: none;
+    color: #333;
+
+}
+    </style>
+</head>
+<body>
+    <header>
+        <nav>     
+            <h1 style="font-size:45px; margin-left: 40px; "> ArtCurator</h1>     
+            <a href="#" class="nav-btn galleries-nav">VISIT YOUR GALLERIES</a>
+        </nav>
+        <h2 style="font-size: 15px; margin-left: 40px;"> Create Your Personal Gallery</h2>
+
+</header>
+
+
+    <form id="search-form" class="search-container" onsubmit="handleSearch(event)">
+        <input 
+            type="text" 
+            id="searchInput" 
+            placeholder=" Search for art, artist, styles..." 
+            required
+        />
+        <button type="submit" class="search-icon">
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
+
+
+    
+    <div id="artwork"> </div>
+    
+    <div id="footer">
+        <div>
+            <p>&copy; 2025 ArtCurator. All rights reserved.</p>
+            <p>Discover, collect, and curate your favorite artworks.</p>
+        </div>
+        <div>
+            <p>Contact us: <a href="mailto:hello@artcurator.com">hello@artcurator.com</a></p>
+            <p>Follow us on
+                <a href="https://instagram.com/artcurator">Instagram</a> 
+            </p>
+        </div>
+        <div>
+            <p><a href="#">About</a> | <a href="#">Visit Your Galleries</a></p>
+        </div>
+
+    </div> 
+    <script>
+         let page = 1;
+        let isLoading = false; 
+
+
+    function handleSearch(event) {
+        event.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (query) {
+                page = 1;
+                document.getElementById("artwork").innerHTML = ''; // Clear existing results
+                fetchArtwork(query);
+            } else { alert('Please enter a term to search for.');}
+        }
+        // get API
+        function fetchArtwork(query) {
+            if (isLoading) return; // Prevent fetching if already in progress
+            isLoading = true;
+            
+            fetch(`https://api.artic.edu/api/v1/artworks/search?q=${query}&fields=title,image_id,artist_title,artist_display,classification_titles,description,date_display&&page=${page}&limit=9`)
+                .then(res => {return res.text();})
+                .then(data => {
+                    data = JSON.parse(data)
+                    displayArtworks(data.data);
+                    isLoading = false;
+                    page++; // Increment page for the next request
+
+                })
+                .catch(error => console.log(error)); isLoading = false;
+        }
+
+
+        // Display the artwork in the page
+        function displayArtworks(artworks) {
+            const container = document.getElementById("artwork");
+            //   container.innerHTML = ''
+            
+            artworks.forEach(artwork => {
+                
+                art_each = document.createElement("div");
+                art_each.innerHTML = `
+                    <img src="${`https://www.artic.edu/iiif/2/${artwork.image_id}/full/400,/0/default.jpg`}">
+                        <button class="save-btn" id="save-btn"><i class="fas fa-bookmark"></i></button>
+                         <!-- ADD DATABASE CONNECTION HERE WHEN SAVE IS CLICKED -->
+                        
+
+                        <h3 style="margin-bottom:5px; margin-top: 10px">${artwork.title}</h3>
+                        <p"margin-bottom:0px; ">${artwork.artist_title}, ${artwork.date_display}</p>
+                        <!-- EXTRA ART DATA IS HERE (but not displayed on screen. Put in database?) -->
+                        <!-- <p>${artwork.artist_display}</p> -->
+                        <!-- <p>${artwork.classification_titles}</p>-->
+
+
+                `;
+                document.getElementById('save-btn').addEventListener('click', () => {
+                    fetch('/api/save-art', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(artwork)
+                    });
+                })
+                container.appendChild(art_each);
+                
+            });
+        }
+            function checkScrollPosition() {
+            const scrollPosition = window.innerHeight + window.scrollY;
+            const bottomPosition = document.documentElement.scrollHeight;
+            
+            if (scrollPosition >= bottomPosition - 100) { 
+                // fetch again
+                const query = document.getElementById('searchInput').value.trim();
+                if (query) {
+                    fetchArtwork(query);
+                }
+            }
+        }
+
+        window.addEventListener('scroll', checkScrollPosition);
+
+        window.onload = fetchArtwork("France");
+
+    </script>
+</body>
+</html>

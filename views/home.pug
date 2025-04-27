@@ -1,0 +1,103 @@
+doctype html
+html
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Homepage
+        link(href="https://fonts.googleapis.com/css2?family=Vidaloka&display=swap" rel="stylesheet")
+        link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css")
+        link(rel="stylesheet", href="/style.css")
+    body
+    header
+        nav
+        h1(style="font-size:45px; margin-left: 40px;") ArtCurator
+        a.nav-btn.galleries-nav(href="#") VISIT YOUR GALLERIES
+        h2(style="font-size: 15px; margin-left: 40px;") Create Your Personal Gallery
+
+    form#search-form.search-container(onsubmit="handleSearch(event)")
+        input#searchInput(type="text", placeholder=" Search for art, artist, styles...", required)
+        button.search-icon(type="submit")
+        i.fas.fa-search
+
+    #artwork
+
+    #footer
+        div
+        p © 2025 ArtCurator. All rights reserved.
+        p Discover, collect, and curate your favorite artworks.
+        div
+        p
+            | Contact us: 
+            a(href="mailto:hello@artcurator.com") hello@artcurator.com
+        p
+            | Follow us on 
+            a(href="https://instagram.com/artcurator") Instagram
+        div
+        p 
+            a(href="#") About
+            |  | 
+            a(href="#") Visit Your Galleries
+
+    script.
+        let page = 1;
+        let isLoading = false;
+
+        function handleSearch(event) {
+        event.preventDefault();
+        const query = document.getElementById('searchInput').value.trim();
+        if (query) {
+            page = 1;
+            document.getElementById("artwork").innerHTML = '';
+            fetchArtwork(query);
+        } else {
+            alert('Please enter a term to search for.');
+        }
+        }
+
+        function fetchArtwork(query) {
+        if (isLoading) return;
+        isLoading = true;
+
+        fetch(`https://api.artic.edu/api/v1/artworks/search?q=${query}&fields=title,image_id,artist_title,artist_display,classification_titles,description,date_display&&page=${page}&limit=9`)
+            .then(res => res.text())
+            .then(data => {
+            data = JSON.parse(data);
+            displayArtworks(data.data);
+            isLoading = false;
+            page++;
+            })
+            .catch(error => {
+            console.log(error);
+            isLoading = false;
+            });
+        }
+
+        function displayArtworks(artworks) {
+        const container = document.getElementById("artwork");
+
+        artworks.forEach(artwork => {
+            let art_each = document.createElement("div");
+            art_each.innerHTML = `
+            <img src="https://www.artic.edu/iiif/2/${artwork.image_id}/full/400,/0/default.jpg">
+            <button class="save-btn"><i class="fas fa-bookmark"></i></button>
+            <h3 style="margin-bottom:5px; margin-top: 10px">${artwork.title}</h3>
+            <p>${artwork.artist_title}, ${artwork.date_display}</p>
+            `;
+            container.appendChild(art_each);
+        });
+        }
+
+        function checkScrollPosition() {
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const bottomPosition = document.documentElement.scrollHeight;
+
+        if (scrollPosition >= bottomPosition - 100) {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+            fetchArtwork(query);
+            }
+        }
+        }
+
+        window.addEventListener('scroll', checkScrollPosition);
+        window.onload = () => fetchArtwork("France");

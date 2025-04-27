@@ -1,0 +1,95 @@
+body {background-color: #faf3f3; font-family: 'Vidaloka', serif;}
+        h1 {color: #5d071e; font-family: 'Vidaloka', serif;  margin-bottom: 0;}
+        h2 {margin-top: 0}
+    #artwork {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 100px; 
+    }
+
+    #artwork div {
+        background-color: #fff7f7;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        text-align: left;
+        position: relative; 
+        padding-bottom: 0px;
+    }
+
+    #artwork img { width: 100%; height: auto; border-radius: 6px;  transition: transform 0.5s ease; }
+
+    #artwork img:hover {
+    transform: scale(1.05); /* Slight zoom effect */
+}
+    .search-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 15px 10px 15px 10px;
+    border-radius: 30px;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    font-size: 16px;
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    right: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+}
+nav{ display: flex; justify-content: space-between; align-items: center; padding: 0px;}
+        .nav-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .galleries-nav {
+            background-color: #e8e8e8;
+            color: #333;
+        }
+        header {background-color: white; margin-bottom: 40px;;
+}
+  
+.save-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(0,0,0,0.1);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .save-btn:hover {background-color: rgba(0,0,0,0.3);}
+
+        #footer {
+    background-color: white;
+    color: black;
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column; }
+#footer a {
+    text-decoration: none;
+    color: #333;
+
+}
